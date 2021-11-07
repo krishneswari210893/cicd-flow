@@ -34,9 +34,9 @@ pipeline{
                 script{
                     withCredentials([string(credentialsId: 'nexus_password', variable: 'nexus_password')]) {
                              sh '''
-                                docker build -t 34.227.47.226:8083/springapp:${DOCKER_TAG} .
-                                docker login -u admin -p $nexus_password 34.227.47.226:8083
-                                docker push 34.227.47.226:8083/springapp:${DOCKER_TAG}
+                                docker build -t 54.83.102.185:8083/springapp:${DOCKER_TAG} .
+                                docker login -u admin -p $nexus_password 54.83.102.185:8083
+                                docker push 54.83.102.185:8083/springapp:${DOCKER_TAG}
 				docker logout
 			    '''
 		    }
@@ -48,9 +48,9 @@ pipeline{
                 script{    
 	                     sh '''
 			        cat my_password.txt | docker login --username krishneswari --password-stdin
-				docker tag 34.227.47.226:8083/springapp:${DOCKER_TAG} krishneswari/springapp:${DOCKER_TAG}
+				docker tag 54.83.102.185:8083/springapp:${DOCKER_TAG} krishneswari/springapp:${DOCKER_TAG}
                                 docker push krishneswari/springapp:${DOCKER_TAG}
-				docker rmi 34.227.47.226:8083/springapp:${DOCKER_TAG}
+				docker rmi 54.83.102.185:8083/springapp:${DOCKER_TAG}
 				docker rmi krishneswari/springapp:${DOCKER_TAG}
 				docker logout
                             '''
@@ -77,7 +77,7 @@ pipeline{
                              sh '''
                                   helmversion=$( helm show chart myapp | grep version | cut -d: -f 2 | tr -d ' ')
                                   tar -czvf myapp-${helmversion}.tgz myapp/
-                                  curl -u admin:$nexus_password http:/34.227.47.226:8081/repository/helm-repo/ --upload-file myapp-${helmversion}.tgz -v
+                                  curl -u admin:$nexus_password http://54.83.102.185:8081/repository/helm-repo/ --upload-file myapp-${helmversion}.tgz -v
                             '''
                           }
                     }
@@ -91,7 +91,7 @@ pipeline{
 					echo "${DOCKER_TAG}"
 					        sh '''
 								 sudo grep -irl {DOCKER_TAG} ${WORKSPACE}/kubernetes/manifests-yamls/deployment.yaml | xargs sed -i "s/{DOCKER_TAG}/${DOCKER_TAG}/g"
-								 sudo scp -o StrictHostKeyChecking=no -i /root/.ssh/id_rsa ${WORKSPACE}/kubernetes/manifests-yamls/*.yaml root@172.31.88.87:/etc/ansible/kubernetes/
+								 sudo scp -o StrictHostKeyChecking=no -i /root/.ssh/id_rsa ${WORKSPACE}/kubernetes/manifests-yamls/*.yaml root@172.31.88.87:/etc/ansible/k8s/
 							'''     
 				}
             }
@@ -111,7 +111,7 @@ pipeline{
         stage('Deploying application on k8s cluster from ansible-server using playbook') {
             steps {
                script{
-			        sh 'ssh -o StrictHostKeyChecking=no -i /root/.ssh/id_rsa root@172.31.88.87 "/root/bin/kubectl config get-contexts; /root/bin/kubectl config use-context kubernetes-admin@kubernetes; whoami && hostname; ansible-playbook /etc/ansible/kubernetes/playbook-deployment-service.yaml; sudo rm -rf /etc/ansible/kubernetes/*.yaml;"'   
+			        sh 'ssh -o StrictHostKeyChecking=no -i /root/.ssh/id_rsa root@172.31.88.87 "/root/bin/kubectl config get-contexts; /root/bin/kubectl config use-context kubernetes-admin@kubernetes; whoami && hostname; ansible-playbook /etc/ansible/k8s/playbook-deployment-service.yaml; sudo rm -rf /etc/ansible/k8s/*.yaml;"'   
                }
             }
         }
